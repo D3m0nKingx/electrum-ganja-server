@@ -79,33 +79,31 @@ We will also use the `~/bin` directory to keep locally installed files
 (others might want to use `/usr/local/bin` instead). We will download source
 code files to the `~/src` directory.
 
-    $ sudo adduser ganja --disabled-password
+    $ sudo adduser -m -U ganja --disabled-password
     $ sudo apt-get install git
-    $ sudo su - ganja
+    $ su ganja
     $ mkdir ~/bin ~/src
     $ echo $PATH
 
 If you don't see `/home/ganja/bin` in the output, you should add this line
 to your `.bashrc`, `.profile`, or `.bash_profile`, then logout and relogin:
 
-    PATH="$HOME/bin:$PATH"
+    $ echo "PATH="$HOME/bin:$PATH" | tee -a ~/.bashrc
     $ exit
 
 ### Step 2. Download ganjacoind
 
-We currently recommend ganjacoind 2.0.0.1.
+We currently recommend ganjacoind 1.0.0.4
 
 If you prefer to compile ganjacoind, here are some pointers for Ubuntu:
 
-    $ sudo apt-get install libminiupnpc-dev libdb++-dev libdb-dev libcrypto++-dev libqrencode-dev libboost-all-dev build-essential libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev libssl-dev libdb++-dev libssl-dev ufw git
-    $ sudo add-apt-repository -y ppa:bitcoin/bitcoin
-    $ sudo apt-get update
-    $ sudo apt-get install -y libdb4.8-dev libdb4.8++-dev
-    $ sudo su - ganja
-    $ cd ~/src && git clone https://github.com/ganjaproject/ganjax.git
-    $ cd ganja/src
+    $ sudo apt-get build-essential install libminiupnpc-dev libdb5.3++-dev libcrypto++-dev libqrencode-dev libboost-all-dev  libssl-dev libgmp-dev ufw git wget python-pip
+    
+    $ su ganja
+    $ cd ~/src && git clone https://github.com/legends420/GanjaCoin.git
+    $ cd GanjaCoin/src
     $ make -f makefile.unix
-    $ cp -a src/ganjacoind ~/bin
+    $ cp -av src/ganjacoind ~/bin
 
 ### Step 3. Configure and start ganjacoind
 
@@ -113,16 +111,19 @@ In order to allow Electrum to "talk" to `ganjacoind`, we need to set up an RPC
 username and password for `ganjacoind`. We will then start `ganjacoind` and
 wait for it to complete downloading the blockchain.
 
-    $ mkdir ~/.ganja
-    $ $EDITOR ~/.ganja/ganja.conf
+    $ mkdir ~/.Ganjaproject
+    $ $EDITOR ~/.Ganjaproject/Ganjaproject.conf
 
 Write this in `ganja.conf`:
 
     rpcuser=<rpc-username>
     rpcpassword=<rpc-password>
     daemon=1
+    server=1
     txindex=1
-    disablewallet=1
+    disablewallet=1exit
+    
+    
 
 
 If you have an existing installation of ganjacoind and have not previously
@@ -150,7 +151,7 @@ find out the best way to do this.
 We will download the latest git snapshot for Electrum to configure and install it:
 
     $ cd ~
-    $ git clone https://github.com/dev0tion/electrum-ganja-server
+    $ git clone https://github.com/D3m0nKingx/electrum-ganja-server
     $ cd electrum-ganja-server
     $ sudo apt-get install python-setuptools
     $ sudo ./configure
@@ -204,7 +205,7 @@ The "configure" script above will offer you to download a database with pruning 
 
 Alternatively, if you have the time and nerve, you can import the blockchain yourself.
 
-As of January 2017 it takes about 3 hours to import the complete blockchain, depending
+As of June 2018 it takes just a few mins to import the complete blockchain, depending
 on CPU speed, I/O speed, and your selected pruning limit.
 
 It's considerably faster and strongly recommended to index in memory. You can use /dev/shm or
@@ -220,7 +221,7 @@ It's not recommended to do initial indexing of the database on a SSD because the
 does at least 100 GB (!) of disk writes and puts considerable wear-and-tear on an SSD. It's a lot better
 to use tmpfs and just swap out to disk when necessary.   
 
-Databases have grown to roughly 100MB as of January 2017. Leveldb prunes the database from time to time,
+Databases have grown to roughly 10MB as of June 2018. Leveldb prunes the database from time to time,
 so it's not uncommon to see databases ~50% larger at times when it's writing a lot, especially when
 indexing from the beginning.
 
@@ -297,7 +298,7 @@ If you are on Debian > 8.0 Jessie or another distribution based on it, you also 
 
 Check if the limits are changed either by logging with the user configured to run Electrum server as. Example:
 
-    su - ganja
+    su ganja
     ulimit -n
 
 Or if you use sudo and the user is added to sudoers group:
