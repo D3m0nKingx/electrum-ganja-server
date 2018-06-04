@@ -1,7 +1,7 @@
 build/
 dist/
-electrum_stratis_server.egg-info/
+electrum_ganja_server.egg-info/
 *.pyc
 *.so
 *.o
-electrum-stratis.conf
+electrum-ganja.conf
