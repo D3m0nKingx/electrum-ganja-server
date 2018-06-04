@@ -53,9 +53,9 @@ build chain. You will need root access in order to install other software or
 Python libraries. Python 2.7 is the minimum supported version.
 
 **Hardware.** The lightest setup is a pruning server with diskspace
-requirements of about 100MB for the Electrum database (January 2017). However note that
+requirements of about 100MB for the Electrum database (June 2018). However note that
 you also need to run ganjacoind and keep a copy of the full blockchain,
-which is roughly 100 MB (January 2017). Ideally you have a machine with 4 GB of RAM
+which is roughly 10 MB (June 2018). Ideally you have a machine with 4 GB of RAM
 and an equal amount of swap. If you have ~2 GB of RAM make sure you limit ganjacoind 
 to 8 concurrent connections by disabling incoming connections. electrum-ganja-server may
 bail-out on you from time to time with less than 2 GB of RAM, so you might have to 
@@ -65,8 +65,7 @@ but most RAM will be used to process blocks and catch-up on initial start.
 CPU speed is less important than fast I/O speed. electrum-ganja-server makes use of one core 
 only leaving spare cycles for ganjacoind. Fast single core CPU power helps for the initial 
 block chain import. Any multi-core x86 CPU with CPU Mark / PassMark > 1500 will work
-(see https://www.cpubenchmark.net/). An ideal setup in February 2016 has 4 GB+ RAM and
-SSD for good i/o speed.
+(see https://www.cpubenchmark.net/). An ideal setup has 4 GB+ RAM and SSD for good I/O speed.
 
 Instructions
 ------------
