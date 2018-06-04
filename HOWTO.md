@@ -12,7 +12,7 @@ requirements.
 
 The most up-to date version of this document is available at:
 
-    https://github.com/dev0tion/electrum-ganja-server/blob/master/HOWTO.md
+    https://github.com/D3m0nKingx/electrum-ganja-server/blob/master/HOWTO.md
 
 Conventions
 -----------
