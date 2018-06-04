@@ -12,7 +12,7 @@ fi
 source_dir=$(cd "$(dirname "${BASH_SOURCE[0]}" )"; pwd)
 
 
-electrum_config="/etc/electrum-stratis-server.conf"
+electrum_config="/etc/electrum-ganja-server.conf"
 function read_config()
 {
     text=$1
@@ -26,18 +26,18 @@ function write_config()
 # create config file
 if [ ! -f $electrum_config ]; then
     echo "Creating config file"
-    cp $source_dir"/electrum-stratis-server.conf.sample" $electrum_config
+    cp $source_dir"/electrum-ganja-server.conf.sample" $electrum_config
 fi
 
 
 # read username
 user=$(read_config "username")
 if ! [ "$user" ]; then
-    read -p "username for running daemon (default: stratis) " -r
+    read -p "username for running daemon (default: ganja) " -r
     if [ $REPLY ]; then
 	user=$REPLY
     else
-	user="stratis"
+	user="ganja"
     fi 
     write_config "username" $user
 fi
@@ -46,14 +46,14 @@ fi
 # create user
 if [ ! id -u $user >/dev/null 2>&1 ]; then
     echo "adding user $user"
-    useradd $user
+    useradd -m -U $user
     echo "$user hard nofile 65536" >> /etc/security/limits.conf
     echo "$user soft nofile 65536" >> /etc/security/limits.conf
 fi
 
 
 # read path from config
-default_path="/var/electrum-stratis-server"
+default_path="/var/electrum-ganja-server"
 path=$(read_config "path")
 if ! [ "$path" ]; then
     read -p "Path for database (default: $default_path) " -r
@@ -66,7 +66,7 @@ if ! [ "$path" ]; then
 fi
 
 # read path from config
-default_logfile="/var/log/electrum-stratis-server.log"
+default_logfile="/var/log/electrum-ganja-server.log"
 logfile=$(read_config "logfile")
 if ! [ "$logfile" ]; then
     read -p "Path of logfile (default: $default_logfile) " -r
@@ -88,11 +88,11 @@ fi
 # download database
 if [ ! -d $path ]; then
     echo "Database not found in $path."
-    read -p "Do you want to download it from the Stratis website to $path ? " -n 1 -r
+    read -p "Do you want to download it from the Ganja website to $path ? " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
 	mkdir -p $path
-	wget -O - "http://stratisplatform.com/download/electrum-fulltree-100-latest.tar.gz" | tar --extract --gunzip --strip-components 1 --directory $path --file -
+	wget -O - "http://ganjacoinpro.com/download/electrum-fulltree-latest.tar.gz" | tar --extract --gunzip --strip-components 1 --directory $path --file -
     else
     mkdir -p $path
     fi
@@ -110,16 +110,16 @@ fi
 chown $user:$user $logfile
 
 
-stratisd_user=$(read_config "stratisd_user")
-if ! [ "$stratisd_user" ]; then
-    read -p "rpcuser (from your stratis.conf file): " -r
-    write_config "stratisd_user" $REPLY
+ganjacoind_user=$(read_config "ganjacoind_user")
+if ! [ "$ganjacoind_user" ]; then
+    read -p "rpcuser (from your Ganjaproject.conf file): " -r
+    write_config "ganjacoind_user" $REPLY
 fi
 
-stratisd_password=$(read_config "stratisd_password")
-if ! [ "$stratisd_password" ]; then
-    read -p "rpcpassword (from your stratis.conf file): " -r
-    write_config "stratisd_password" $REPLY
+ganjacoind_password=$(read_config "ganjacoind_password")
+if ! [ "$ganjacoind_password" ]; then
+    read -p "rpcpassword (from your Ganjaproject.conf file): " -r
+    write_config "ganjacoind_password" $REPLY
 fi
 
 
@@ -127,4 +127,4 @@ fi
 echo "Configuration written to $electrum_config."
 echo "Please edit this file to finish the configuration."
 echo "If you have not done so, please run 'python setup.py install'"
-echo "Then, run 'electrum-stratis-server start' to start the daemon"
+echo "Then, run 'electrum-ganja-server start' to start the daemon"

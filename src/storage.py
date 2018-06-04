@@ -41,7 +41,7 @@ Patricia tree for hashing unspents
 
 # increase this when database needs to be updated
 global GENESIS_HASH
-GENESIS_HASH = '0000066e91e46e5a264d42c89e1204963b2ee6be230b443e9159020539d972af'
+GENESIS_HASH = '0000ec9d4f2f1b94c0b870aa4fa4d950b5301274451d9d0346d21a18f2e99e5f'
 DB_VERSION = 3
 KEYLENGTH = 56   # 20 + 32 + 4
 
@@ -246,7 +246,7 @@ class Storage(object):
         print_log("UTXO tree root hash:", self.root_hash.encode('hex'))
         print_log("Coins in database:", coins)
 
-    # convert between Stratis addresses and 20 bytes keys used for storage.
+    # convert between Ganja addresses and 20 bytes keys used for storage.
     @staticmethod
     def address_to_key(addr):
         return bc_address_to_hash_160(addr)
@@ -286,7 +286,7 @@ class Storage(object):
     def listunspent(self, addr):
         key = self.address_to_key(addr)
         if key is None:
-            raise BaseException('Invalid Stratis address', addr)
+            raise BaseException('Invalid Ganja address', addr)
         out = []
         with self.db_utxo.lock:
             for k, v in self.db_utxo.db.iterator(start=key):
@@ -336,8 +336,8 @@ class Storage(object):
             print_log("no undo info for ", height)
         return eval(s)
 
-    def write_undo_info(self, height, stratisd_height, undo_info):
-        if height > stratisd_height - self.reorg_limit or self.test_reorgs:
+    def write_undo_info(self, height, ganjacoind_height, undo_info):
+        if height > ganjacoind_height - self.reorg_limit or self.test_reorgs:
             self.db_undo.put("undo_info_%d" % (height % self.reorg_limit), repr(undo_info))
 
     @staticmethod

@@ -79,11 +79,11 @@ class BlockchainProcessor(Processor):
             self.test_reorgs = False
         self.storage = Storage(config, shared, self.test_reorgs)
 
-        self.stratisd_url = 'http://%s:%s@%s:%s/' % (
-            config.get('stratisd', 'stratisd_user'),
-            config.get('stratisd', 'stratisd_password'),
-            config.get('stratisd', 'stratisd_host'),
-            config.get('stratisd', 'stratisd_port'))
+        self.ganjacoind_url = 'http://%s:%s@%s:%s/' % (
+            config.get('ganjacoind', 'ganjacoind_user'),
+            config.get('ganjacoind', 'ganjacoind_password'),
+            config.get('ganjacoind', 'ganjacoind_host'),
+            config.get('ganjacoind', 'ganjacoind_port'))
 
         self.sent_height = 0
         self.sent_header = None
@@ -101,7 +101,7 @@ class BlockchainProcessor(Processor):
 
 
     def do_catch_up(self):
-        self.header = self.block2header(self.stratisd('getblock', (self.storage.last_hash,)))
+        self.header = self.block2header(self.ganjacoind('getblock', (self.storage.last_hash,)))
         self.header['utxo_root'] = self.storage.get_root_hash().encode('hex')
         self.catch_up(sync=False)
         if not self.shared.stopped():
@@ -112,7 +112,7 @@ class BlockchainProcessor(Processor):
         while not self.shared.stopped():
             self.main_iteration()
             if self.shared.paused():
-                print_log("stratisd is responding")
+                print_log("ganjacoind is responding")
                 self.shared.unpause()
             time.sleep(10)
 
@@ -135,7 +135,7 @@ class BlockchainProcessor(Processor):
             msg = "block %d (%d %.2fs) %s" %(self.storage.height, num_tx, delta, self.storage.get_root_hash().encode('hex'))
             msg += " (%.2ftx/s, %.2fs/block)" % (tx_per_second, seconds_per_block)
             run_blocks = self.storage.height - self.start_catchup_height
-            remaining_blocks = self.stratisd_height - self.storage.height
+            remaining_blocks = self.ganjacoind_height - self.storage.height
             if run_blocks>0 and remaining_blocks>0:
                 remaining_minutes = remaining_blocks * seconds_per_block / 60
                 new_blocks = int(remaining_minutes / 10) # number of new blocks expected during catchup
@@ -145,28 +145,28 @@ class BlockchainProcessor(Processor):
                 msg += " (eta %s, %d blocks)" % (rt, remaining_blocks)
             print_log(msg)
 
-    def wait_on_stratisd(self):
+    def wait_on_ganjacoind(self):
         self.shared.pause()
         time.sleep(10)
         if self.shared.stopped():
             # this will end the thread
             raise BaseException()
 
-    def stratisd(self, method, params=()):
+    def ganjacoind(self, method, params=()):
         postdata = dumps({"method": method, 'params': params, 'id': 'jsonrpc'})
         while True:
             try:
-                response = urllib.urlopen(self.stratisd_url, postdata)
+                response = urllib.urlopen(self.ganjacoind_url, postdata)
                 r = load(response)
                 response.close()
             except:
-                print_log("cannot reach stratisd...")
-                self.wait_on_stratisd()
+                print_log("cannot reach ganjacoind...")
+                self.wait_on_ganjacoind()
             else:
                 if r['error'] is not None:
                     if r['error'].get('code') == -28:
-                        print_log("stratisd still warming up...")
-                        self.wait_on_stratisd()
+                        print_log("ganjacoind still warming up...")
+                        self.wait_on_ganjacoind()
                         continue
                     raise BaseException(r['error'])
                 break
@@ -185,8 +185,8 @@ class BlockchainProcessor(Processor):
         }
 
     def get_header(self, height):
-        block_hash = self.stratisd('getblockhash', (height,))
-        b = self.stratisd('getblock', (block_hash,))
+        block_hash = self.ganjacoind('getblockhash', (height,))
+        b = self.ganjacoind('getblock', (block_hash,))
         return self.block2header(b)
 
     def init_headers(self, db_height):
@@ -287,7 +287,7 @@ class BlockchainProcessor(Processor):
 
     def get_mempool_transaction(self, txid):
         try:
-            raw_tx = self.stratisd('getrawtransaction', (txid, 0))
+            raw_tx = self.ganjacoind('getrawtransaction', (txid, 0))
         except:
             return None
         vds = deserialize.BCDataStream()
@@ -350,8 +350,8 @@ class BlockchainProcessor(Processor):
         if cache_only:
             return -1
 
-        block_hash = self.stratisd('getblockhash', (height,))
-        b = self.stratisd('getblock', (block_hash,))
+        block_hash = self.ganjacoind('getblockhash', (height,))
+        b = self.ganjacoind('getblock', (block_hash,))
         tx_list = b.get('tx')
         tx_pos = tx_list.index(tx_hash)
 
@@ -432,7 +432,7 @@ class BlockchainProcessor(Processor):
 
         # add undo info
         if not revert:
-            self.storage.write_undo_info(block_height, self.stratisd_height, undo_info)
+            self.storage.write_undo_info(block_height, self.ganjacoind_height, undo_info)
 
         # add the max
         self.storage.save_height(block_hash, block_height)
@@ -565,7 +565,7 @@ class BlockchainProcessor(Processor):
 
         elif method == 'blockchain.transaction.broadcast':
             try:
-                txo = self.stratisd('sendrawtransaction', params)
+                txo = self.ganjacoind('sendrawtransaction', params)
                 print_log("sent tx:", txo)
                 result = txo
             except BaseException, e:
@@ -575,7 +575,7 @@ class BlockchainProcessor(Processor):
                     #  it's considered an error message
                     message = error["message"]
                     if "non-mandatory-script-verify-flag" in message:
-                        result = "Your client produced a transaction that is not accepted by the stratis network any more. Please upgrade to Electrum 2.5.1 or newer\n"
+                        result = "Your client produced a transaction that is not accepted by the ganja network any more. Please upgrade to Electrum 2.5.1 or newer\n"
                     else:
                         result = "The transaction was rejected by network rules.(" + message + ")\n" \
                             "[" + params[0] + "]"
@@ -590,11 +590,11 @@ class BlockchainProcessor(Processor):
 
         elif method == 'blockchain.transaction.get':
             tx_hash = params[0]
-            result = self.stratisd('getrawtransaction', (tx_hash, 0))
+            result = self.ganjacoind('getrawtransaction', (tx_hash, 0))
 
         elif method == 'blockchain.estimatefee':
             num = int(params[0])
-            result = self.stratisd('estimatefee', (num,))
+            result = self.ganjacoind('estimatefee', (num,))
 
         elif method == 'blockchain.relayfee':
             result = self.relayfee
@@ -606,7 +606,7 @@ class BlockchainProcessor(Processor):
 
 
     def get_block(self, block_hash):
-        block = self.stratisd('getblock', (block_hash,))
+        block = self.ganjacoind('getblock', (block_hash,))
 
         rawtxreq = []
         i = 0
@@ -621,21 +621,21 @@ class BlockchainProcessor(Processor):
 
         while True:
             try:
-                response = urllib.urlopen(self.stratisd_url, postdata)
+                response = urllib.urlopen(self.ganjacoind_url, postdata)
                 r = load(response)
                 response.close()
             except:
-                logger.error("stratisd error (getfullblock)")
-                self.wait_on_stratisd()
+                logger.error("ganjacoind error (getfullblock)")
+                self.wait_on_ganjacoind()
                 continue
             try:
                 rawtxdata = []
                 for ir in r:
-                    assert ir['error'] is None, "Error: make sure you run stratisd with txindex=1; use -reindex if needed."
+                    assert ir['error'] is None, "Error: make sure you run ganjacoind with txindex=1; use -reindex if needed."
                     rawtxdata.append(ir['result'])
             except BaseException as e:
                 logger.error(str(e))
-                self.wait_on_stratisd()
+                self.wait_on_ganjacoind()
                 continue
 
             block['tx'] = rawtxdata
@@ -651,11 +651,11 @@ class BlockchainProcessor(Processor):
 
         while not self.shared.stopped():
             # are we done yet?
-            info = self.stratisd('getinfo')
+            info = self.ganjacoind('getinfo')
             self.relayfee = info.get('relayfee')
-            self.stratisd_height = info.get('blocks')
-            stratisd_block_hash = self.stratisd('getblockhash', (self.stratisd_height,))
-            if self.storage.last_hash == stratisd_block_hash:
+            self.ganjacoind_height = info.get('blocks')
+            ganjacoind_block_hash = self.ganjacoind('getblockhash', (self.ganjacoind_height,))
+            if self.storage.last_hash == ganjacoind_block_hash:
                 self.up_to_date = True
                 break
 
@@ -666,7 +666,7 @@ class BlockchainProcessor(Processor):
             # not done..
             self.up_to_date = False
             try:
-                next_block_hash = self.stratisd('getblockhash', (self.storage.height + 1,))
+                next_block_hash = self.ganjacoind('getblockhash', (self.storage.height + 1,))
             except BaseException, e:
                 revert = True
 
@@ -703,7 +703,7 @@ class BlockchainProcessor(Processor):
             # print time
             self.print_time(n)
 
-        self.header = self.block2header(self.stratisd('getblock', (self.storage.last_hash,)))
+        self.header = self.block2header(self.ganjacoind('getblock', (self.storage.last_hash,)))
         self.header['utxo_root'] = self.storage.get_root_hash().encode('hex')
 
         if self.shared.stopped(): 
@@ -713,7 +713,7 @@ class BlockchainProcessor(Processor):
 
     def memorypool_update(self):
         t0 = time.time()
-        mempool_hashes = set(self.stratisd('getrawmempool'))
+        mempool_hashes = set(self.ganjacoind('getrawmempool'))
         touched_addresses = set()
 
         # get new transactions

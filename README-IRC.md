@@ -1,7 +1,7 @@
-IRC is used by Electrum Stratis server to find 'peers' - other Electrum servers. The
+IRC is used by Electrum Ganja server to find 'peers' - other Electrum servers. The
 current list can be seen by running:
 
-  electrum-stratis-server peers
+  electrum-ganja-server peers
 
 The following config file options are used by the IRC part of Electrum server:
 
@@ -14,7 +14,7 @@ The following config file options are used by the IRC part of Electrum server:
 
 `irc` is used to determine whether the IRC thread will be started or
 the Electrum server will run in private mode (default). In private
-mode, `electrum-stratis-server peers` will always return an empty list.
+mode, `electrum-ganja-server peers` will always return an empty list.
 
 `host` is a fully-qualified domain name (FQDN) of your Electrum
 server. It is used both when binding the listener for incoming client
@@ -33,7 +33,7 @@ NAT setup where you might want to bind to a high port locally but DNAT
 a different possibly privileged port for inbound connections
 
 `irc_nick` is a nick name that will be appended to the EL_ suffix when
-composing the IRC nickname to identify your server on #electrum-stratis.
+composing the IRC nickname to identify your server on #electrum-ganja.
 
 Please note the IRC name field can only contain 50 chars and will be
 composed of `host` + protocol version number + Port numbers for the

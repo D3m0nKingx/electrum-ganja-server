@@ -5,22 +5,22 @@ detailed information on how to configure your server.
 TLDR:
 $ sudo ./configure
 $ sudo python ./setup.py install
-$ electrum-stratis-server start
-$ electrum-stratis-server stop
+$ electrum-ganja-server start
+$ electrum-ganja-server stop
 
 
 Note: If you want to run the server without installing it on your
-system, just run 'run_electrum_stratis_server"
+system, just run 'run_electrum_ganja_server"
 
 
-1. Install and run stratisd.
+1. Install and run ganjacoind.
 ----------------------------
 
-You will need to run stratisd with the config option txindex=1. If you
-have not previously done so, you may need to reindex the stratisd
+You will need to run ganjacoind with the config option txindex=1. If you
+have not previously done so, you may need to reindex the ganjacoind
 blockchain
 
-Note: you cannot use a pruning stratisd.  A full stratis node is
+Note: you cannot use a pruning ganjacoind.  A full ganja node is
 required in order to know for each address if it has been
 used. Pruning occurs only at the level of the Electrum database.
 
@@ -32,16 +32,16 @@ You need to run the script as root:
 $ sudo ./configure
 
 It will:
- * create the configuration file in /etc/electrum-stratis-server.conf
+ * create the configuration file in /etc/electrum-ganja-server.conf
  * create a user that will run the daemon
- * optionally, download a fresh database from the Stratis website.
+ * optionally, download a fresh database from the Ganja website.
 
 If you choose not to use the website, your server will have to build
 the database from scratch. This process can take several days. To
 speed it up, it is recommended to locate your database in shared
-memory, in electrum-stratis-server.conf: path = /run/shm/electrum-stratis_db
+memory, in electrum-ganja-server.conf: path = /run/shm/electrum-ganja_db
 and copy the result to a directory once the server is done processin all blocks.
-Make sure you change the path in electrum-stratis-server.conf to the directory path.
+Make sure you change the path in electrum-ganja-server.conf to the directory path.
 
 Note: The 'configure' script does not configure SSL and IRC. You will
 need to manually edit the configuration file in order to enable SSL on
@@ -59,31 +59,31 @@ Note: You will need to redo this everytime you pull code from git.
 4. Using the server
 -------------------
 
-Use 'electrum-stratis-server' to start and stop the server:
+Use 'electrum-ganja-server' to start and stop the server:
 
-$ electrum-stratis-server <start|stop|status|getinfo>
+$ electrum-ganja-server <start|stop|status|getinfo>
 
 The server will write a log file in its database path.
 
 
-5. Add electrum-stratis-server to your system's services
+5. Add electrum-ganja-server to your system's services
 ----------------------------------------------------
 
-If your system supports it, you may add electrum-stratis-server to the
+If your system supports it, you may add electrum-ganja-server to the
 /etc/init.d directory. This will ensure that the server is started and
 stopped automatically, and that the database is closed safely whenever
 your machine is rebooted.
 
-# ln -s `which electrum-stratis-server` /etc/init.d/electrum-stratis-server
-# update-rc.d electrum-stratis-server defaults
+# ln -s `which electrum-ganja-server` /etc/init.d/electrum-ganja-server
+# update-rc.d electrum-ganja-server defaults
 
 
 
 6. Troubleshooting:
 -------------------
 
- * if your server or stratisd is killed because is uses too much
-   memory, configure stratisd to limit the number of connections
+ * if your server or ganjacoind is killed because is uses too much
+   memory, configure ganjacoind to limit the number of connections
 
  * if you see "Too many open files" errors, you may need to increase
    your user's File Descriptors limit. For this, see

@@ -5,14 +5,14 @@ Abstract
 --------
 
 This document is an easy to follow guide to installing and running your own
-Stratis Electrum server on Linux. It is structured as a series of steps you need to
+Ganja Electrum server on Linux. It is structured as a series of steps you need to
 follow, ordered in the most logical way. The next two sections describe some
 conventions we use in this document and the hardware, software, and expertise
 requirements.
 
 The most up-to date version of this document is available at:
 
-    https://github.com/dev0tion/electrum-stratis-server/blob/master/HOWTO.md
+    https://github.com/dev0tion/electrum-ganja-server/blob/master/HOWTO.md
 
 Conventions
 -----------
@@ -20,8 +20,8 @@ Conventions
 In this document, lines starting with a hash sign (#) or a dollar sign ($)
 contain commands. Commands starting with a hash should be run as root,
 commands starting with a dollar should be run as a normal user (in this
-document, we assume that user is called 'stratis'). We also assume the
-stratis user has sudo rights, so we use `$ sudo command` when we need to.
+document, we assume that user is called 'ganja'). We also assume the
+ganja user has sudo rights, so we use `$ sudo command` when we need to.
 
 Strings that are surrounded by "lower than" and "greater than" ( < and > )
 should be replaced by the user with something appropriate. For example,
@@ -54,16 +54,16 @@ Python libraries. Python 2.7 is the minimum supported version.
 
 **Hardware.** The lightest setup is a pruning server with diskspace
 requirements of about 100MB for the Electrum database (January 2017). However note that
-you also need to run stratisd and keep a copy of the full blockchain,
+you also need to run ganjacoind and keep a copy of the full blockchain,
 which is roughly 100 MB (January 2017). Ideally you have a machine with 4 GB of RAM
-and an equal amount of swap. If you have ~2 GB of RAM make sure you limit stratisd 
-to 8 concurrent connections by disabling incoming connections. electrum-stratis-server may
+and an equal amount of swap. If you have ~2 GB of RAM make sure you limit ganjacoind 
+to 8 concurrent connections by disabling incoming connections. electrum-ganja-server may
 bail-out on you from time to time with less than 2 GB of RAM, so you might have to 
 monitor the process and restart it. You can tweak cache sizes in the config to an extend
 but most RAM will be used to process blocks and catch-up on initial start.
 
-CPU speed is less important than fast I/O speed. electrum-stratis-server makes use of one core 
-only leaving spare cycles for stratisd. Fast single core CPU power helps for the initial 
+CPU speed is less important than fast I/O speed. electrum-ganja-server makes use of one core 
+only leaving spare cycles for ganjacoind. Fast single core CPU power helps for the initial 
 block chain import. Any multi-core x86 CPU with CPU Mark / PassMark > 1500 will work
 (see https://www.cpubenchmark.net/). An ideal setup in February 2016 has 4 GB+ RAM and
 SSD for good i/o speed.
@@ -71,52 +71,52 @@ SSD for good i/o speed.
 Instructions
 ------------
 
-### Step 1. Create a user for running stratisd and Electrum server
+### Step 1. Create a user for running ganjacoind and Electrum server
 
 This step is optional, but for better security and resource separation I
-suggest you create a separate user just for running `stratisd` and Electrum.
+suggest you create a separate user just for running `ganjacoind` and Electrum.
 We will also use the `~/bin` directory to keep locally installed files
 (others might want to use `/usr/local/bin` instead). We will download source
 code files to the `~/src` directory.
 
-    $ sudo adduser stratis --disabled-password
+    $ sudo adduser ganja --disabled-password
     $ sudo apt-get install git
-    $ sudo su - stratis
+    $ sudo su - ganja
     $ mkdir ~/bin ~/src
     $ echo $PATH
 
-If you don't see `/home/stratis/bin` in the output, you should add this line
+If you don't see `/home/ganja/bin` in the output, you should add this line
 to your `.bashrc`, `.profile`, or `.bash_profile`, then logout and relogin:
 
     PATH="$HOME/bin:$PATH"
     $ exit
 
-### Step 2. Download stratisd
+### Step 2. Download ganjacoind
 
-We currently recommend stratisd 2.0.0.1.
+We currently recommend ganjacoind 2.0.0.1.
 
-If you prefer to compile stratisd, here are some pointers for Ubuntu:
+If you prefer to compile ganjacoind, here are some pointers for Ubuntu:
 
     $ sudo apt-get install libminiupnpc-dev libdb++-dev libdb-dev libcrypto++-dev libqrencode-dev libboost-all-dev build-essential libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev libssl-dev libdb++-dev libssl-dev ufw git
     $ sudo add-apt-repository -y ppa:bitcoin/bitcoin
     $ sudo apt-get update
     $ sudo apt-get install -y libdb4.8-dev libdb4.8++-dev
-    $ sudo su - stratis
-    $ cd ~/src && git clone https://github.com/stratisproject/stratisx.git
-    $ cd stratis/src
+    $ sudo su - ganja
+    $ cd ~/src && git clone https://github.com/ganjaproject/ganjax.git
+    $ cd ganja/src
     $ make -f makefile.unix
-    $ cp -a src/stratisd ~/bin
+    $ cp -a src/ganjacoind ~/bin
 
-### Step 3. Configure and start stratisd
+### Step 3. Configure and start ganjacoind
 
-In order to allow Electrum to "talk" to `stratisd`, we need to set up an RPC
-username and password for `stratisd`. We will then start `stratisd` and
+In order to allow Electrum to "talk" to `ganjacoind`, we need to set up an RPC
+username and password for `ganjacoind`. We will then start `ganjacoind` and
 wait for it to complete downloading the blockchain.
 
-    $ mkdir ~/.stratis
-    $ $EDITOR ~/.stratis/stratis.conf
+    $ mkdir ~/.ganja
+    $ $EDITOR ~/.ganja/ganja.conf
 
-Write this in `stratis.conf`:
+Write this in `ganja.conf`:
 
     rpcuser=<rpc-username>
     rpcpassword=<rpc-password>
@@ -125,24 +125,24 @@ Write this in `stratis.conf`:
     disablewallet=1
 
 
-If you have an existing installation of stratisd and have not previously
+If you have an existing installation of ganjacoind and have not previously
 set txindex=1 you need to reindex the blockchain by running
 
-    $ stratisd -reindex
+    $ ganjacoind -reindex
 
-If you already have a freshly indexed copy of the blockchain with txindex start `stratisd`:
+If you already have a freshly indexed copy of the blockchain with txindex start `ganjacoind`:
 
-    $ stratisd
+    $ ganjacoind
 
-Allow some time to pass, so `stratisd` connects to the network and starts
+Allow some time to pass, so `ganjacoind` connects to the network and starts
 downloading blocks. You can check its progress by running:
 
-    $ stratisd getinfo
+    $ ganjacoind getinfo
 
-Before starting the Electrum server your stratisd should have processed all
+Before starting the Electrum server your ganjacoind should have processed all
 blocks and caught up to the current height of the network (not just the headers).
-You should also set up your system to automatically start stratisd at boot
-time, running as the 'stratis' user. Check your system documentation to
+You should also set up your system to automatically start ganjacoind at boot
+time, running as the 'ganja' user. Check your system documentation to
 find out the best way to do this.
 
 ### Step 4. Download and install Electrum server
@@ -150,8 +150,8 @@ find out the best way to do this.
 We will download the latest git snapshot for Electrum to configure and install it:
 
     $ cd ~
-    $ git clone https://github.com/dev0tion/electrum-stratis-server
-    $ cd electrum-stratis-server
+    $ git clone https://github.com/dev0tion/electrum-ganja-server
+    $ cd electrum-ganja-server
     $ sudo apt-get install python-setuptools
     $ sudo ./configure
     $ sudo python setup.py install
@@ -267,11 +267,11 @@ in case you need to restore them.
 
 ### Step 9. Configure Electrum server
 
-Electrum reads a config file (/etc/electrum-stratis-server.conf) when starting up. This
-file includes the database setup, stratisd RPC setup, and a few other
+Electrum reads a config file (/etc/electrum-ganja-server.conf) when starting up. This
+file includes the database setup, ganjacoind RPC setup, and a few other
 options.
 
-The "configure" script listed above will create a config file at /etc/electrum-stratis-server.conf
+The "configure" script listed above will create a config file at /etc/electrum-ganja-server.conf
 which you can edit to modify the settings.
 
 Go through the config options and set them to your liking.
@@ -283,12 +283,12 @@ Electrum server currently needs quite a few file handles to use leveldb. It also
 file handles for each connection made to the server. It's good practice to increase the
 open files limit to 64k.
 
-The "configure" script will take care of this and ask you to create a user for running electrum-stratis-server.
-If you're using the user `stratis` to run electrum and have added it as shown in this document, run
+The "configure" script will take care of this and ask you to create a user for running electrum-ganja-server.
+If you're using the user `ganja` to run electrum and have added it as shown in this document, run
 the following code to add the limits to your /etc/security/limits.conf:
 
-     echo "stratis hard nofile 65536" >> /etc/security/limits.conf
-     echo "stratis soft nofile 65536" >> /etc/security/limits.conf
+     echo "ganja hard nofile 65536" >> /etc/security/limits.conf
+     echo "ganja soft nofile 65536" >> /etc/security/limits.conf
 
 If you are on Debian > 8.0 Jessie or another distribution based on it, you also need to add these lines in /etc/pam.d/common-session and /etc/pam.d/common-session-noninteractive otherwise the limits in /etc/security/limits.conf will not work:
 
@@ -297,30 +297,30 @@ If you are on Debian > 8.0 Jessie or another distribution based on it, you also 
 
 Check if the limits are changed either by logging with the user configured to run Electrum server as. Example:
 
-    su - stratis
+    su - ganja
     ulimit -n
 
 Or if you use sudo and the user is added to sudoers group:
 
-    sudo -u stratis -i ulimit -n
+    sudo -u ganja -i ulimit -n
 
 
 Two more things for you to consider:
 
 1. To increase privacy of transactions going through your server
-   you may want to close stratisd for incoming connections and connect outbound only. Most servers do run
+   you may want to close ganjacoind for incoming connections and connect outbound only. Most servers do run
    full nodes with open incoming connections though.
 
-2. Consider restarting stratisd (together with electrum-stratis-server) on a weekly basis to clear out unconfirmed
+2. Consider restarting ganjacoind (together with electrum-ganja-server) on a weekly basis to clear out unconfirmed
    transactions from the local the memory pool which did not propagate over the network.
 
 ### Step 11. (Finally!) Run Electrum server
 
 The magic moment has come: you can now start your Electrum server as root (it will su to your unprivileged user):
 
-    # electrum-stratis-server start
+    # electrum-ganja-server start
 
-Note: If you want to run the server without installing it on your system, just run 'run_electrum_stratis_server" as the
+Note: If you want to run the server without installing it on your system, just run 'run_electrum_ganja_server" as the
 unprivileged user.
 
 You should see this in the log file:
@@ -335,15 +335,15 @@ The important pieces to you are at the end. In this example, the server has to c
 
 If you want to stop Electrum server, use the 'stop' command:
 
-    # electrum-stratis-server stop
+    # electrum-ganja-server stop
 
 
-If your system supports it, you may add electrum-stratis-server to the /etc/init.d directory.
+If your system supports it, you may add electrum-ganja-server to the /etc/init.d directory.
 This will ensure that the server is started and stopped automatically, and that the database is closed
 safely whenever your machine is rebooted.
 
-    # ln -s `which electrum-stratis-server` /etc/init.d/electrum-stratis-server
-    # update-rc.d electrum-stratis-server defaults
+    # ln -s `which electrum-ganja-server` /etc/init.d/electrum-ganja-server
+    # update-rc.d electrum-ganja-server defaults
 
 ### Step 12. Test the Electrum server
 
@@ -356,4 +356,4 @@ or hostname and the port. Press 'Ok' and the client will disconnect from the
 current server and connect to your new Electrum server. You should see your
 addresses and transactions history. You can see the number of blocks and
 response time in the server selection window. You should send/receive some
-stratis to confirm that everything is working properly.
+ganja to confirm that everything is working properly.

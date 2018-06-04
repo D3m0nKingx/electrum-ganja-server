@@ -32,8 +32,8 @@ __b58base = len(__b58chars)
 
 global PUBKEY_ADDRESS
 global SCRIPT_ADDRESS
-PUBKEY_ADDRESS = 63
-SCRIPT_ADDRESS = 125
+PUBKEY_ADDRESS = 103
+SCRIPT_ADDRESS = 39
 
 def rev_hex(s):
     return s.decode('hex')[::-1].encode('hex')
@@ -135,7 +135,7 @@ def hash_160_to_script_address(h160):
     return hash_160_to_address(h160, SCRIPT_ADDRESS)
 
 
-def hash_160_to_address(h160, addrtype = 63):
+def hash_160_to_address(h160, addrtype = 103):
     """ Checks if the provided hash is actually 160bits or 20 bytes long and returns the address, else None
     """
     if h160 is None or len(h160) is not 20:
@@ -166,7 +166,7 @@ def b58encode(v):
         long_value = div
     result = __b58chars[long_value] + result
 
-    # Stratis does a little leading-zero-compression:
+    # Ganja does a little leading-zero-compression:
     # leading 0-bytes in the input become leading-1s
     nPad = 0
     for c in v:
@@ -240,7 +240,7 @@ import logging
 import logging.handlers
 
 logging.basicConfig(format="%(asctime)-11s %(message)s", datefmt="[%d/%m/%Y-%H:%M:%S]")
-logger = logging.getLogger('electrum-stratis')
+logger = logging.getLogger('electrum-ganja')
 
 def init_logger():
     logger.setLevel(logging.INFO)
