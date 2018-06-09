@@ -113,14 +113,13 @@ wait for it to complete downloading the blockchain.
     $ mkdir ~/.Ganjaproject
     $ $EDITOR ~/.Ganjaproject/Ganjaproject.conf
 
-Write this in `ganja.conf`:
+Write this in `Ganjaproject.conf`:
 
-    rpcuser=<rpc-username>
-    rpcpassword=<rpc-password>
     daemon=1
     server=1
     txindex=1
-    disablewallet=1exit
+    rpcuser=<rpc-username>
+    rpcpassword=<rpc-password>
     
     
 
