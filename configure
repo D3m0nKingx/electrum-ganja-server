@@ -12,21 +12,21 @@ fi
 source_dir=$(cd "$(dirname "${BASH_SOURCE[0]}" )"; pwd)
 
 
-electrum_config="/etc/electrum-ganja-server.conf"
+electrum_ganja_config="/etc/electrum-ganja-server.conf"
 function read_config()
 {
     text=$1
-    echo `grep -e ^$text $electrum_config |awk -F\= '{print $2}' | tail -n 1| tr -d ' '`
+    echo `grep -e ^$text $electrum_ganja_config |awk -F\= '{print $2}' | tail -n 1| tr -d ' '`
 }
 function write_config()
 {
-    sed -i -s "s#$1 =.*#$1 = $2#" $electrum_config
+    sed -i -s "s#$1 =.*#$1 = $2#" $electrum_ganja_config
 }
 
 # create config file
-if [ ! -f $electrum_config ]; then
+if [ ! -f $electrum_ganja_config ]; then
     echo "Creating config file"
-    cp $source_dir"/electrum-ganja-server.conf.sample" $electrum_config
+    cp $source_dir"/electrum-ganja-server.conf.sample" $electrum_ganja_config
 fi
 
 
@@ -46,7 +46,7 @@ fi
 # create user
 if [ ! id -u $user >/dev/null 2>&1 ]; then
     echo "adding user $user"
-    useradd -m -U $user
+    useradd -m -U $user --disable-password
     echo "$user hard nofile 65536" >> /etc/security/limits.conf
     echo "$user soft nofile 65536" >> /etc/security/limits.conf
 fi
@@ -88,11 +88,11 @@ fi
 # download database
 if [ ! -d $path ]; then
     echo "Database not found in $path."
-    read -p "Do you want to download it from the Ganja website to $path ? " -n 1 -r
+    read -p "Do you want to download it from the Ganjacoin website to $path ? " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
 	mkdir -p $path
-	wget -O - "http://ganjacoinpro.com/download/electrum-fulltree-latest.tar.gz" | tar --extract --gunzip --strip-components 1 --directory $path --file -
+	wget -O - "https://ganjacoinpro.com/download/electrum-fulltree-latest.tar.gz" | tar --extract --gunzip --strip-components 1 --directory $path --file -
     else
     mkdir -p $path
     fi
@@ -124,7 +124,7 @@ fi
 
 
 # finish
-echo "Configuration written to $electrum_config."
+echo "Configuration written to $electrum_ganja_config."
 echo "Please edit this file to finish the configuration."
 echo "If you have not done so, please run 'python setup.py install'"
 echo "Then, run 'electrum-ganja-server start' to start the daemon"
